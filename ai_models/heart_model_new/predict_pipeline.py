@@ -1,7 +1,6 @@
 import pandas as pd
 import joblib
 
-print("predict_pipeline.py is running...")
 
 # 1) تحميل الموديل وترتيب الأعمدة
 model = joblib.load("saved_models/best_model.pkl")
@@ -74,19 +73,54 @@ def predict_heart_disease(raw_data):
 
 # تجربة سريعة
 if __name__ == "__main__":
-    sample_input = {
-        "Age": 55,
-        "Sex": 1,
-        "RestingBP": 140,
-        "Cholesterol": 240,
-        "FastingBS": 1,
-        "MaxHR": 150,
-        "ExerciseAngina": 1,
-        "Oldpeak": 1.5,
-        "ChestPainType": "ASY",
-        "RestingECG": "Normal",
-        "ST_Slope": "Flat"
-    }
+    import argparse
+    import json
+    import sys
 
-    result = predict_heart_disease(sample_input)
-    print(result)
+    parser = argparse.ArgumentParser(description="Predict heart disease risk.")
+    parser.add_argument("--age", type=int, required=True)
+    parser.add_argument("--sex", type=int, required=True)
+    parser.add_argument("--resting_bp", type=int, required=True)
+    parser.add_argument("--cholesterol", type=int, required=True)
+    parser.add_argument("--fasting_bs", type=int, required=True)
+    parser.add_argument("--max_hr", type=int, required=True)
+    parser.add_argument("--exercise_angina", type=int, required=True)
+    parser.add_argument("--oldpeak", type=float, required=True)
+    parser.add_argument("--chest_pain_type", type=str, required=True)
+    parser.add_argument("--resting_ecg", type=str, required=True)
+    parser.add_argument("--st_slope", type=str, required=True)
+
+    # If no arguments provided, run the sample
+    if len(sys.argv) == 1:
+        sample_input = {
+            "Age": 55,
+            "Sex": 1,
+            "RestingBP": 140,
+            "Cholesterol": 240,
+            "FastingBS": 1,
+            "MaxHR": 150,
+            "ExerciseAngina": 1,
+            "Oldpeak": 1.5,
+            "ChestPainType": "ASY",
+            "RestingECG": "Normal",
+            "ST_Slope": "Flat"
+        }
+        result = predict_heart_disease(sample_input)
+        print(result)
+    else:
+        args = parser.parse_args()
+        input_data = {
+            "Age": args.age,
+            "Sex": args.sex,
+            "RestingBP": args.resting_bp,
+            "Cholesterol": args.cholesterol,
+            "FastingBS": args.fasting_bs,
+            "MaxHR": args.max_hr,
+            "ExerciseAngina": args.exercise_angina,
+            "Oldpeak": args.oldpeak,
+            "ChestPainType": args.chest_pain_type,
+            "RestingECG": args.resting_ecg,
+            "ST_Slope": args.st_slope
+        }
+        result = predict_heart_disease(input_data)
+        print(json.dumps(result))
