@@ -5,13 +5,15 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node src/server.ts",
-    "dev:http": "ts-node src/http-server.ts",
+    "dev": "ts-node src/http-server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/http-server.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "types": "tsc --noEmit"
+    "types": "tsc --noEmit",
+    "docker:up:prod": "docker compose up -d",
+    "docker:down:prod": "docker compose down",
+    "docker:logs:prod": "docker compose logs -f"
   },
   "keywords": [],
   "author": "",

@@ -51,15 +51,16 @@ function createMcpServer() {
       }
 
       const result = await tool.handler(request.params.arguments);
-
-      return {
-        content: [{ type: "text", text: result }],
-      };
+      return result;
     } catch (err) {
       console.error(err);
-
       return {
-        content: [{ type: "text", text: "Tool failed" }],
+        content: [
+          {
+            type: "text",
+            text: err instanceof Error ? err.message : "Tool failed",
+          },
+        ],
         isError: true,
       };
     }

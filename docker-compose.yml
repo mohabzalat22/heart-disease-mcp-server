@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    image: heart-disease-mcp-server:latest
+    ports:
+      - "${HOST_PORT}:${PORT}"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=${PORT}
+    restart: unless-stopped

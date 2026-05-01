@@ -1,0 +1,12 @@
+node_modules
+dist
+.env
+.git
+*.log
+!ai_models/
+!ai_models/**
+scratch/
+*.tgz
+npm-debug.log
+Dockerfile
+docker-compose.yml
