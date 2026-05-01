@@ -14,7 +14,10 @@ import { tools } from "./tools/index";
 const PORT = process.env.PORT || 3000;
 
 // Store active sessions (server + transport) by sessionId
-const activeSessions = new Map<string, { transport: SSEServerTransport; server: Server }>();
+const activeSessions = new Map<
+  string,
+  { transport: SSEServerTransport; server: Server }
+>();
 
 /**
  * Creates a new MCP Server instance with tool handlers.
@@ -31,19 +34,35 @@ function createMcpServer() {
       capabilities: {
         tools: {},
       },
-    }
+    },
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
-      tools: tools.map(tool => tool.definition),
+      tools: tools.map((tool) => tool.definition),
     };
   });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    const tool = tools.find(t => t.definition.name === request.params.name);
-    if (tool) return tool.handler(request.params.arguments);
-    throw new Error(`Unknown tool: ${request.params.name}`);
+    try {
+      const tool = tools.find((t) => t.definition.name === request.params.name);
+      if (!tool) {
+        throw new Error(`Unknown tool: ${request.params.name}`);
+      }
+
+      const result = await tool.handler(request.params.arguments);
+
+      return {
+        content: [{ type: "text", text: result }],
+      };
+    } catch (err) {
+      console.error(err);
+
+      return {
+        content: [{ type: "text", text: "Tool failed" }],
+        isError: true,
+      };
+    }
   });
 
   return server;
@@ -68,17 +87,20 @@ const httpServer = createServer(async (req, res) => {
     try {
       const transport = new SSEServerTransport("/messages", res);
       const server = createMcpServer();
-      
+
       await server.connect(transport);
-      
+
       const sessionId = transport.sessionId;
       activeSessions.set(sessionId, { transport, server });
-      console.log(`[${new Date().toISOString()}] Session ${sessionId} connected`);
+      console.log(
+        `[${new Date().toISOString()}] Session ${sessionId} connected`,
+      );
 
-      transport.onclose = async () => {
-        console.log(`[${new Date().toISOString()}] Session ${sessionId} closed`);
+      transport.onclose = () => {
+        console.log(
+          `[${new Date().toISOString()}] Session ${sessionId} closed`,
+        );
         activeSessions.delete(sessionId);
-        await server.close();
       };
     } catch (error) {
       console.error("SSE Connection Error:", error);
@@ -89,8 +111,10 @@ const httpServer = createServer(async (req, res) => {
     }
   } else if (url.pathname === "/messages" && req.method === "POST") {
     const sessionId = url.searchParams.get("sessionId");
-    console.log(`[${new Date().toISOString()}] Message for session: ${sessionId}`);
-    
+    console.log(
+      `[${new Date().toISOString()}] Message for session: ${sessionId}`,
+    );
+
     const session = activeSessions.get(sessionId || "");
     if (session) {
       try {
@@ -118,10 +142,10 @@ httpServer.listen(PORT, () => {
   console.log(`✉️ Messages endpoint: http://localhost:${PORT}/messages`);
 });
 
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
 });
